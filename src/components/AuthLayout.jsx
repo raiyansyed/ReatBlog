@@ -1,26 +1,24 @@
-import React, {use, useEffect, useState} from 'react'
-import {useNavigate} from 'react-router-dom'
-import {useSelector} from 'react-redux'
+import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 
-
-export default function Protected({children, authentication = true}) {
+export default function AuthLayout({ children, authentication = true }) {
   const navigate = useNavigate()
-  const [loader, setLoader] = useState(true)
-  const authStatus = useSelector((state) => state.auth.status)
+  const [loading, setLoading] = useState(true)
+  const authStatus = useSelector(state => state.auth.status)
 
   useEffect(() => {
-
-    if(authentication && authStatus !== authentication) {
-      navigate('/login');
+    // needs auth but not logged in -> go login
+    if (authentication && !authStatus) {
+      navigate('/login')
     }
-    else if (!authentication && authStatus !== authentication){
-      navigate('/');
+    // does NOT need auth (login/signup) but already logged in -> go home
+    else if (!authentication && authStatus) {
+      navigate('/')
     }
-    setLoader(false)
+    setLoading(false)
+  }, [authentication, authStatus, navigate])
 
-  }, [authStatus, navigate, authentication]);
-
-  return (
-    loader ? <h1>Loading....</h1> : {children}
-  )
+  if (loading) return <h1>Loading...</h1>
+  return <>{children}</>
 }

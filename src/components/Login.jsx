@@ -18,15 +18,23 @@ function Login() {
       const session = await authService.login(data);
       if (session) {
         const userData = await authService.getCurrentUser();
-        if (userData) {
-          dispatch(authLogin());
-        }
+        if (userData) dispatch(authLogin({ userData }));
         navigate("/");
       }
-    } catch (error) {
-      setError(error.message);
+    } catch (err) {
+      // Already logged in (duplicate session attempt)
+      if (err?.code === 409) {
+        const userData = await authService.getCurrentUser();
+        if (userData) {
+          dispatch(authLogin({ userData }));
+          navigate("/");
+          return;
+        }
+      }
+      setError(err.message);
     }
   };
+
   return (
     <div className="w-full flex justify-center items-center">
       <div
@@ -34,7 +42,7 @@ function Login() {
       >
         <div className="mb-2 flex justify-center">
           <span className="inline-block max-w-[100px]">
-            <Logo/>
+            <Logo width="w-25" />
           </span>
         </div>
         <h2 className="text-center text-2xl font-bold leading-tight">
@@ -74,7 +82,7 @@ function Login() {
                 required: true,
               })}
             />
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full hover:to-blue-500">
               SignIn
             </Button>
           </div>
