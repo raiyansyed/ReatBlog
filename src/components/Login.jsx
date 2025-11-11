@@ -34,14 +34,14 @@ function Login() {
       >
         <div className="mb-2 flex justify-center">
           <span className="inline-block max-w-[100px]">
-            <Logo wrapperStyling="flex justify-center items-center m-10 ml-20" />
+            <Logo/>
           </span>
         </div>
         <h2 className="text-center text-2xl font-bold leading-tight">
           Sign in into Your Account
         </h2>
         <p className="text-center text-base mt-2 text-black/60">
-          Do&apos;t have an account?&nbsp;
+          Don&apos;t have an account?&nbsp;
           <Link
             className="font-medium transition-all duration-100 hover:underline text-primary"
             to="/signup"

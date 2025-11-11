@@ -1,11 +1,12 @@
 import React from 'react'
-import logo from '../assets/bird_2.jpg'
+import image from '../assets/bird_2.jpg'
 
-export default function Logo({wrapperStyling, imgStyling="w-25"}) {
+function Logo({width = '100px'}) {
   return (
-    <div className={wrapperStyling}>
-        <img src={logo} alt="Logo"
-        className={imgStyling}/>
+    <div>
+      <img src={image} alt="Logo" />
     </div>
   )
 }
+
+export default Logo

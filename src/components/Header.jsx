@@ -39,7 +39,7 @@ export default function Header() {
         <nav className='flex'>
           <div className='mr-4'>
             <Link to='/'>
-              <Logo imgStyling='w-10'/>
+              <Logo/>
             </Link>
           </div>
           <ul className='flex ml-auto'>
