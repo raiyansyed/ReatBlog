@@ -40,13 +40,19 @@ export default function PostForm({ post }) {
   }, [watch, slugTransform, setValue]);
 
   const submit = async (data) => {
+    console.log("📝 Submit triggered with data:", data);
+    console.log("👤 Current userData:", userData);
+
     try {
       if (post) {
+        // UPDATING existing post
+        console.log("🔄 Updating existing post:", post.$id);
         const file = data.image?.[0]
-          ? await appwriteService.uploadFile(data.image[0])
+          ? await appwriteService.uploadFile(data.image[0], { publicRead: true })
           : null;
 
-        if (file) {
+        if (file && post.featuredImage) {
+          // Only delete old file if new file uploaded successfully
           await appwriteService.deleteFile(post.featuredImage);
         }
 
@@ -57,17 +63,28 @@ export default function PostForm({ post }) {
 
         if (dbPost?.$id) navigate(`/post/${dbPost.$id}`);
       } else {
+        // CREATING new post
+        console.log("🖼️ Attempting to upload file...");
         const file = data.image?.[0]
-          ? await appwriteService.uploadFile(data.image[0])
+          ? await appwriteService.uploadFile(data.image[0], { publicRead: true })
           : null;
-        if (!file) return alert("Please upload an image.");
+        
+        console.log("📁 File upload result:", file);
 
-        data.featuredImage = file.$id;
+        const postData = {
+          title: data.title,
+          slug: data.slug,
+          content: data.content,
+          featuredImage: file ? file.$id : null, // Image is optional
+          status: data.status,
+          userId: userData?.$id,
+        };
 
-        const dbPost = await appwriteService.createPost({
-          ...data,
-          userId: userData?.$id, // ✅ use the correct field
-        });
+        console.log("📤 Creating post with data:", postData);
+
+        const dbPost = await appwriteService.createPost(postData);
+
+        console.log("✅ Post creation response:", dbPost);
 
         if (dbPost?.$id) {
           navigate(`/post/${dbPost.$id}`);
@@ -113,20 +130,35 @@ export default function PostForm({ post }) {
 
       <div className="w-1/3 px-2">
         <Input
-          label="Featured Image:"
+          label="Featured Image (optional):"
           type="file"
           className="mb-4"
           accept="image/png, image/jpg, image/jpeg, image/gif"
-          {...register("image", { required: !post })}
+          {...register("image", { required: false })}
         />
 
-        {post && (
+        {post && post.featuredImage && (
           <div className="w-full mb-4">
-            <img
-              src={appwriteService.getFilePreview(post.featuredImage)}
-              alt={post.title}
-              className="rounded-lg"
-            />
+            {(() => {
+              const url = appwriteService.getFilePreview(post.featuredImage, { width: 800, quality: 85 });
+              const svgPlaceholder = 'data:image/svg+xml;utf8,' +
+                encodeURIComponent(
+                  `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400">
+                    <rect width="100%" height="100%" fill="#e5e7eb"/>
+                    <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="18" fill="#6b7280">Preview unavailable</text>
+                  </svg>`
+                );
+              return (
+                <img
+                  src={url || svgPlaceholder}
+                  alt={post.title}
+                  className="rounded-lg"
+                  onError={(e) => {
+                    e.currentTarget.src = svgPlaceholder;
+                  }}
+                />
+              );
+            })()}
           </div>
         )}
 
